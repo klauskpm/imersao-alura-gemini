@@ -1,7 +1,7 @@
 import { db } from "@/drizzle/db";
 import { sql } from "@vercel/postgres";
 
-export const getUsers = async () => {
+const getUsers = async () => {
   return db.query.users.findMany();
 };
 
