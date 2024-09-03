@@ -12,5 +12,5 @@ export async function GET(request: NextRequest) {
 
     const result = await generateGeminiResponse(text);
 
-    return new Response(result.response.text());
+    return new Response(result);
 }

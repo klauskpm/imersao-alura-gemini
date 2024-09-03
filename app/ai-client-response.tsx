@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function AiResponse({ text }: { text?: string }) {
+export default function AiClientResponse({ text }: { text?: string }) {
     const [aiResult, setAiResult] = useState<string>('');
 
     useEffect(() => {
@@ -15,8 +15,8 @@ export default function AiResponse({ text }: { text?: string }) {
     return (
         aiResult && (
             <>
-            <p>Response from AI:</p>
-            <pre>{aiResult}</pre>
+                <p>Response from AI: (Client)</p>
+                <pre>{aiResult}</pre>
             </>
         )
     );

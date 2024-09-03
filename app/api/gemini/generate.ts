@@ -25,5 +25,7 @@ export async function generateGeminiResponse(text: string) {
         history: [],
     });
 
-    return chatSession.sendMessage(text);
+    const result = await chatSession.sendMessage(text);
+
+    return result.response.text();
 }
