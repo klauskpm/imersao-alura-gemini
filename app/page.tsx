@@ -1,15 +1,16 @@
 import { db } from "@/drizzle/db";
-import { sql } from "@vercel/postgres";
+import AiResponse from "./ai-response";
 
 const getUsers = async () => {
   return db.query.users.findMany();
 };
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: { text?: string } }) {
   const users = await getUsers();
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <AiResponse text={searchParams.text} />
       <h1 className="text-4xl font-bold">Users</h1>
       <ul>
         {users.map((user) => (

@@ -1,31 +1,16 @@
-const {
-    GoogleGenerativeAI,
-} = require("@google/generative-ai");
+import { NextRequest } from "next/server";
+import { generateGeminiResponse } from "./generate";
 
-const apiKey = process.env.GEMINI_API_KEY;
+export async function GET(request: NextRequest) {
+    const text = request.nextUrl.searchParams.get('text');
 
-const generationConfig = {
-    temperature: 0.5,
-    topP: 0.95,
-    topK: 64,
-    maxOutputTokens: 8192,
-    responseMimeType: "text/plain",
-};
+    if (!text) {
+        return new Response("You must provide a text query parameter", {
+            status: 400
+        });
+    }
 
-export async function GET(request: Request) {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-pro",
-    });
-
-    const chatSession = model.startChat({
-        generationConfig,
-        // safetySettings: Adjust safety settings
-        // See https://ai.google.dev/gemini-api/docs/safety-settings
-        history: [],
-    });
-
-    const result = await chatSession.sendMessage("Create a poem about pokemon.");
+    const result = await generateGeminiResponse(text);
 
     return new Response(result.response.text());
 }
