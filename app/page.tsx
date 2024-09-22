@@ -10,7 +10,6 @@ export default async function Home({ searchParams }: { searchParams: { text?: st
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1 className="text-4xl font-bold">Users</h1>
       <TransactionTableComponent />
     </main>
   );
