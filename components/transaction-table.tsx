@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowDownIcon, ArrowUpIcon, DollarSignIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ArrowDownIcon, ArrowUpIcon, DollarSignIcon, MoreHorizontalIcon, PlusIcon } from "lucide-react"
 
 interface Transaction {
   id: number
@@ -21,9 +23,29 @@ const initialTransactions: Transaction[] = [
 ]
 
 export function TransactionTableComponent() {
-  const [transactions] = useState<Transaction[]>(initialTransactions)
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions)
 
   const totalBalance = transactions.reduce((sum, transaction) => sum + transaction.amount, 0)
+
+  const handleAddTransaction = () => {
+    // This is a placeholder function. In a real app, you'd open a modal or navigate to a form.
+    const newTransaction: Transaction = {
+      id: transactions.length + 1,
+      title: "New Transaction",
+      amount: 0,
+      date: new Date().toISOString().split('T')[0]
+    }
+    setTransactions([...transactions, newTransaction])
+  }
+
+  const handleEditTransaction = (id: number) => {
+    // Placeholder for edit functionality
+    console.log(`Edit transaction ${id}`)
+  }
+
+  const handleDeleteTransaction = (id: number) => {
+    setTransactions(transactions.filter(transaction => transaction.id !== id))
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -40,8 +62,12 @@ export function TransactionTableComponent() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Transaction History</CardTitle>
+          <Button onClick={handleAddTransaction}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add Transaction
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -50,6 +76,7 @@ export function TransactionTableComponent() {
                 <TableHead>Title</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -67,6 +94,24 @@ export function TransactionTableComponent() {
                     </div>
                   </TableCell>
                   <TableCell>{transaction.date}</TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontalIcon className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEditTransaction(transaction.id)}>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
