@@ -4,6 +4,16 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ArrowDownIcon, ArrowUpIcon, DollarSignIcon, MoreHorizontalIcon, PlusIcon } from "lucide-react"
 
@@ -11,40 +21,66 @@ interface Transaction {
   id: number
   title: string
   amount: number
-  date: string
+  datetime: string
 }
 
 const initialTransactions: Transaction[] = [
-  { id: 1, title: "Salary", amount: 5000, date: "2023-06-01" },
-  { id: 2, title: "Rent", amount: -1500, date: "2023-06-02" },
-  { id: 3, title: "Groceries", amount: -200, date: "2023-06-03" },
-  { id: 4, title: "Freelance Work", amount: 1000, date: "2023-06-04" },
-  { id: 5, title: "Utilities", amount: -150, date: "2023-06-05" },
+  { id: 1, title: "Salary", amount: 5000, datetime: "2023-06-01T09:00" },
+  { id: 2, title: "Rent", amount: -1500, datetime: "2023-06-02T10:30" },
+  { id: 3, title: "Groceries", amount: -200, datetime: "2023-06-03T14:15" },
+  { id: 4, title: "Freelance Work", amount: 1000, datetime: "2023-06-04T16:45" },
+  { id: 5, title: "Utilities", amount: -150, datetime: "2023-06-05T11:20" },
 ]
 
 export function TransactionTableComponent() {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [currentTransaction, setCurrentTransaction] = useState<Transaction | null>(null)
 
   const totalBalance = transactions.reduce((sum, transaction) => sum + transaction.amount, 0)
 
-  const handleAddTransaction = () => {
-    // This is a placeholder function. In a real app, you'd open a modal or navigate to a form.
-    const newTransaction: Transaction = {
-      id: transactions.length + 1,
-      title: "New Transaction",
-      amount: 0,
-      date: new Date().toISOString().split('T')[0]
-    }
-    setTransactions([...transactions, newTransaction])
+  const handleOpenDialog = (transaction: Transaction | null = null) => {
+    setCurrentTransaction(transaction)
+    setIsDialogOpen(true)
   }
 
-  const handleEditTransaction = (id: number) => {
-    // Placeholder for edit functionality
-    console.log(`Edit transaction ${id}`)
+  const handleCloseDialog = () => {
+    setCurrentTransaction(null)
+    setIsDialogOpen(false)
+  }
+
+  const handleSubmitTransaction = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const newTransaction: Transaction = {
+      id: currentTransaction?.id || transactions.length + 1,
+      title: formData.get('title') as string,
+      amount: parseFloat(formData.get('amount') as string),
+      datetime: formData.get('datetime') as string,
+    }
+
+    if (currentTransaction) {
+      setTransactions(transactions.map(t => t.id === currentTransaction.id ? newTransaction : t))
+    } else {
+      setTransactions([...transactions, newTransaction])
+    }
+
+    handleCloseDialog()
   }
 
   const handleDeleteTransaction = (id: number) => {
     setTransactions(transactions.filter(transaction => transaction.id !== id))
+  }
+
+  const formatDateTime = (datetime: string) => {
+    const date = new Date(datetime)
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
   }
 
   return (
@@ -64,10 +100,62 @@ export function TransactionTableComponent() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Transaction History</CardTitle>
-          <Button onClick={handleAddTransaction}>
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Add Transaction
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => handleOpenDialog()}>
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Add Transaction
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{currentTransaction ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmitTransaction}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="title" className="text-right">
+                      Title
+                    </Label>
+                    <Input
+                      id="title"
+                      name="title"
+                      defaultValue={currentTransaction?.title}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="amount" className="text-right">
+                      Amount
+                    </Label>
+                    <Input
+                      id="amount"
+                      name="amount"
+                      type="number"
+                      step="0.01"
+                      defaultValue={currentTransaction?.amount}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="datetime" className="text-right">
+                      Date & Time
+                    </Label>
+                    <Input
+                      id="datetime"
+                      name="datetime"
+                      type="datetime-local"
+                      defaultValue={currentTransaction?.datetime}
+                      className="col-span-3"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">{currentTransaction ? 'Update' : 'Add'} Transaction</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
           <Table>
@@ -75,7 +163,7 @@ export function TransactionTableComponent() {
               <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Date & Time</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -93,7 +181,7 @@ export function TransactionTableComponent() {
                       ${Math.abs(transaction.amount).toFixed(2)}
                     </div>
                   </TableCell>
-                  <TableCell>{transaction.date}</TableCell>
+                  <TableCell>{formatDateTime(transaction.datetime)}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -103,7 +191,7 @@ export function TransactionTableComponent() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditTransaction(transaction.id)}>
+                        <DropdownMenuItem onClick={() => handleOpenDialog(transaction)}>
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>
