@@ -1,3 +1,4 @@
+import { TransactionTableComponent } from "@/components/transaction-table";
 import { db } from "@/drizzle/db";
 
 const getUsers = async () => {
@@ -10,13 +11,7 @@ export default async function Home({ searchParams }: { searchParams: { text?: st
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <h1 className="text-4xl font-bold">Users</h1>
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>
-            Name: {user.name}
-          </li>
-        ))}
-      </ul>
+      <TransactionTableComponent />
     </main>
   );
 }
